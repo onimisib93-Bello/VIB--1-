@@ -50,46 +50,175 @@ Please change the parent <Route path="${T}"> to <Route path="${T==="/"?"*":`${T}
       <input type="submit" id="form-submit">
     </form>
     
+    <!-- Join Us Modal -->
+    <div id="joinUsModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+      <div style="background-color: #fefefe; margin: 5% auto; padding: 30px; border: 1px solid #888; border-radius: 10px; width: 90%; max-width: 500px; font-family: 'Poppins', sans-serif;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #333; font-size: 24px;">Join Us</h2>
+          <span id="closeJoinUsModal" style="cursor: pointer; font-size: 28px; font-weight: bold; color: #aaa; padding: 0 5px;">&times;</span>
+        </div>
+        
+        <form id="joinUsForm" style="display: flex; flex-direction: column; gap: 15px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 600;">Full Name *</label>
+            <input type="text" name="fullName" id="joinName" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; box-sizing: border-box;">
+          </div>
+          
+          <div>
+            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 600;">Email Address *</label>
+            <input type="email" name="email" id="joinEmail" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; box-sizing: border-box;">
+          </div>
+          
+          <div>
+            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 600;">Phone Number</label>
+            <input type="tel" name="phone" id="joinPhone" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; box-sizing: border-box;">
+          </div>
+          
+          <div>
+            <label style="display: block; margin-bottom: 10px; color: #333; font-weight: 600;">How would you like to join? *</label>
+            <div style="display: flex; gap: 20px;">
+              <label style="display: flex; align-items: center; cursor: pointer; color: #333;">
+                <input type="radio" name="joinType" value="Volunteer" required style="margin-right: 8px; cursor: pointer;"> Volunteer
+              </label>
+              <label style="display: flex; align-items: center; cursor: pointer; color: #333;">
+                <input type="radio" name="joinType" value="Member" style="margin-right: 8px; cursor: pointer;"> Member
+              </label>
+            </div>
+          </div>
+          
+          <div id="volunteerFields" style="display: none;">
+            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 600;">Areas of Interest</label>
+            <textarea name="interests" id="joinInterests" placeholder="e.g., Mentorship, Education, Community Outreach" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; box-sizing: border-box; min-height: 80px; resize: vertical;"></textarea>
+          </div>
+          
+          <div>
+            <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 600;">Message / Additional Information</label>
+            <textarea name="message" id="joinMessage" placeholder="Tell us about yourself..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Poppins', sans-serif; box-sizing: border-box; min-height: 80px; resize: vertical;"></textarea>
+          </div>
+          
+          <button type="submit" style="padding: 12px; background-color: #c8102e; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; font-family: 'Poppins', sans-serif; font-size: 16px; margin-top: 10px;">Submit</button>
+        </form>
+      </div>
+    </div>
+    
     <script>
       // Formspree Integration
       const FORMSPREE_ENDPOINT = 'https://formspree.io/f/meewperw';
+      const JOIN_US_ENDPOINT = 'https://formspree.io/f/meewperw'; // Same endpoint for now, you can change this later
+      
+      // Join Us Modal functionality
+      const joinUsModal = document.getElementById('joinUsModal');
+      const closeBtn = document.getElementById('closeJoinUsModal');
+      const joinUsForm = document.getElementById('joinUsForm');
+      const volunteerFields = document.getElementById('volunteerFields');
+      const joinTypeRadios = document.querySelectorAll('input[name="joinType"]');
+      
+      // Close modal when X is clicked
+      closeBtn.addEventListener('click', function() {
+        joinUsModal.style.display = 'none';
+      });
+      
+      // Close modal when clicking outside of it
+      window.addEventListener('click', function(event) {
+        if (event.target == joinUsModal) {
+          joinUsModal.style.display = 'none';
+        }
+      });
+      
+      // Show/hide volunteer fields based on selection
+      joinTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.value === 'Volunteer') {
+            volunteerFields.style.display = 'block';
+          } else {
+            volunteerFields.style.display = 'none';
+          }
+        });
+      });
+      
+      // Handle form submission
+      joinUsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(joinUsForm);
+        const data = {
+          fullName: formData.get('fullName'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          joinType: formData.get('joinType'),
+          interests: formData.get('interests'),
+          message: formData.get('message'),
+          _subject: `New ${formData.get('joinType')} Registration - VIB Foundation`
+        };
+        
+        // Convert form data to URL encoded format for Formspree
+        const params = new URLSearchParams();
+        for (let key in data) {
+          params.append(key, data[key]);
+        }
+        
+        // Send to Formspree
+        fetch(JOIN_US_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: params.toString()
+        }).then(response => {
+          if (response.ok) {
+            alert('Thank you for joining! We will contact you soon.');
+            joinUsForm.reset();
+            volunteerFields.style.display = 'none';
+            joinUsModal.style.display = 'none';
+          } else {
+            alert('There was an error submitting the form. Please try again.');
+          }
+        }).catch(error => {
+          console.error('Error:', error);
+          alert('There was an error submitting the form. Please try again.');
+        });
+      });
       
       // Wait for the page to load and form to be rendered
       document.addEventListener('DOMContentLoaded', function() {
         // Give React time to render
         setTimeout(function() {
-          // Find the subscribe button in the footer
-          const subscribeButtons = document.querySelectorAll('button');
-          let subscribeBtn = null;
+          // Find all buttons and set up event listeners
+          const buttons = document.querySelectorAll('button');
           
-          for (let btn of subscribeButtons) {
-            if (btn.textContent.includes('Subscribe')) {
-              subscribeBtn = btn;
-              break;
+          for (let btn of buttons) {
+            // Handle Join Us button
+            if (btn.textContent.includes('Join Us')) {
+              btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                joinUsModal.style.display = 'block';
+              });
             }
-          }
-          
-          if (subscribeBtn) {
-            subscribeBtn.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              
-              const emailInput = document.querySelector('input[placeholder="Enter your email address"], input[type="email"]');
-              
-              if (emailInput && emailInput.value) {
-                const email = emailInput.value;
+            
+            // Handle Subscribe button
+            if (btn.textContent.includes('Subscribe')) {
+              btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 
-                // Method 1: Use the hidden form to submit to Formspree
-                document.getElementById('form-email').value = email;
-                document.getElementById('formspree-form').submit();
+                const emailInput = document.querySelector('input[placeholder="Enter your email address"], input[type="email"]');
                 
-                // Show success message
-                setTimeout(function() {
-                  alert('Thank you for subscribing! We will send you updates soon.');
-                  emailInput.value = '';
-                }, 300);
-              }
-            });
+                if (emailInput && emailInput.value && !emailInput.closest('#joinUsForm')) {
+                  const email = emailInput.value;
+                  
+                  // Use the hidden form to submit to Formspree
+                  document.getElementById('form-email').value = email;
+                  document.getElementById('formspree-form').submit();
+                  
+                  // Show success message
+                  setTimeout(function() {
+                    alert('Thank you for subscribing! We will send you updates soon.');
+                    emailInput.value = '';
+                  }, 300);
+                }
+              });
+            }
           }
         }, 1000);
       });
