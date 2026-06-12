@@ -42,6 +42,14 @@ Please change the parent <Route path="${T}"> to <Route path="${T==="/"?"*":`${T}
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Hidden Formspree Form -->
+    <form id="formspree-form" action="https://formspree.io/f/meewperw" method="POST" style="display: none;">
+      <input type="hidden" name="email" id="form-email">
+      <input type="hidden" name="_subject" value="New Newsletter Subscription - VIB Foundation">
+      <input type="submit" id="form-submit">
+    </form>
+    
     <script>
       // Formspree Integration
       const FORMSPREE_ENDPOINT = 'https://formspree.io/f/meewperw';
@@ -63,43 +71,23 @@ Please change the parent <Route path="${T}"> to <Route path="${T==="/"?"*":`${T}
           
           if (subscribeBtn) {
             subscribeBtn.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
               const emailInput = document.querySelector('input[placeholder="Enter your email address"], input[type="email"]');
               
               if (emailInput && emailInput.value) {
-                e.preventDefault();
-                e.stopPropagation();
-                
                 const email = emailInput.value;
                 
-                // Send to Formspree using JSON format
-                fetch(FORMSPREE_ENDPOINT, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    email: email,
-                    _subject: 'New Newsletter Subscription - VIB Foundation'
-                  })
-                })
-                .then(response => {
-                  console.log('Response status:', response.status);
-                  if (response.ok) {
-                    // Show success message
-                    alert('Thank you for subscribing! We will send you updates soon.');
-                    emailInput.value = '';
-                  } else {
-                    console.error('Formspree error:', response.statusText);
-                    alert('Subscription received! Check your email for confirmation.');
-                  }
-                })
-                .catch(error => {
-                  console.error('Fetch Error:', error);
-                  // Even if there's an error, the submission may have gone through
+                // Method 1: Use the hidden form to submit to Formspree
+                document.getElementById('form-email').value = email;
+                document.getElementById('formspree-form').submit();
+                
+                // Show success message
+                setTimeout(function() {
                   alert('Thank you for subscribing! We will send you updates soon.');
                   emailInput.value = '';
-                });
+                }, 300);
               }
             });
           }
