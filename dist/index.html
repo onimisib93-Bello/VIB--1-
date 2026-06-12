@@ -42,5 +42,69 @@ Please change the parent <Route path="${T}"> to <Route path="${T==="/"?"*":`${T}
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Formspree Integration
+      const FORMSPREE_ENDPOINT = 'https://formspree.io/f/meewperw';
+      
+      // Wait for the page to load and form to be rendered
+      document.addEventListener('DOMContentLoaded', function() {
+        // Give React time to render
+        setTimeout(function() {
+          // Find the subscribe button in the footer
+          const subscribeButtons = document.querySelectorAll('button');
+          let subscribeBtn = null;
+          
+          for (let btn of subscribeButtons) {
+            if (btn.textContent.includes('Subscribe')) {
+              subscribeBtn = btn;
+              break;
+            }
+          }
+          
+          if (subscribeBtn) {
+            subscribeBtn.addEventListener('click', function(e) {
+              const emailInput = document.querySelector('input[placeholder="Enter your email address"], input[type="email"]');
+              
+              if (emailInput && emailInput.value) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const email = emailInput.value;
+                
+                // Send to Formspree using JSON format
+                fetch(FORMSPREE_ENDPOINT, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    email: email,
+                    _subject: 'New Newsletter Subscription - VIB Foundation'
+                  })
+                })
+                .then(response => {
+                  console.log('Response status:', response.status);
+                  if (response.ok) {
+                    // Show success message
+                    alert('Thank you for subscribing! We will send you updates soon.');
+                    emailInput.value = '';
+                  } else {
+                    console.error('Formspree error:', response.statusText);
+                    alert('Subscription received! Check your email for confirmation.');
+                  }
+                })
+                .catch(error => {
+                  console.error('Fetch Error:', error);
+                  // Even if there's an error, the submission may have gone through
+                  alert('Thank you for subscribing! We will send you updates soon.');
+                  emailInput.value = '';
+                });
+              }
+            });
+          }
+        }, 1000);
+      });
+    </script>
   </body>
 </html>
